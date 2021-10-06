@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using MarketingBox.Affiliate.Service.Client;
 using MarketingBox.Affiliate.Service.MyNoSql.Campaigns;
 using MarketingBox.Reporting.Service.Subscribers;
 using MyJetWallet.Sdk.NoSql;
@@ -14,6 +15,8 @@ namespace MarketingBox.Reporting.Service.Modules
     {
         protected override void Load(ContainerBuilder builder)
         {
+            builder.RegisterAffiliateServiceClient(Program.Settings.AffiliateServiceUrl);
+
             var noSqlClient = builder.CreateNoSqlClient(Program.ReloadedSettings(e => e.MyNoSqlReaderHostPort));
 
             var serviceBusClient = builder
@@ -34,9 +37,20 @@ namespace MarketingBox.Reporting.Service.Modules
                 "marketingbox-reporting-service",
                 TopicQueueType.Permanent);
 
+            // subscriber (ISubscriber<MarketingBox.TrafficEngine.Service.Messages.Traffic.CalculatedTrafficMessage>)
+            builder.RegisterMyServiceBusSubscriberSingle<MarketingBox.TrafficEngine.Service.Messages.Traffic.CalculatedTrafficMessage>(
+                serviceBusClient,
+                MarketingBox.TrafficEngine.Service.Messages.Topics.CalculatedTrafficTopic,
+                "marketingbox-reporting-service",
+                TopicQueueType.Permanent);
+
             #endregion
 
             builder.RegisterType<LeadUpdateMessageSubscriber>()
+                .SingleInstance()
+                .AutoActivate();
+
+            builder.RegisterType<CalculatedTrafficMessageSubscriber>()
                 .SingleInstance()
                 .AutoActivate();
         }

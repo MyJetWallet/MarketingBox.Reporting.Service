@@ -16,9 +16,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MarketingBox.Reporting.Service.Grpc\MarketingBox.Reporting.Service.Grpc.csproj" />
-    <ProjectReference Include="..\MarketingBox.Reporting.Service.Messages\MarketingBox.Reporting.Service.Messages.csproj" />
-    <ProjectReference Include="..\MarketingBox.Reporting.Service.MyNoSql\MarketingBox.Reporting.Service.MyNoSql.csproj" />
+    <ProjectReference PrivateAssets="All" Include="..\MarketingBox.Reporting.Service.Grpc\MarketingBox.Reporting.Service.Grpc.csproj" />
+    <ProjectReference PrivateAssets="All" Include="..\MarketingBox.Reporting.Service.Messages\MarketingBox.Reporting.Service.Messages.csproj" />
+    <ProjectReference PrivateAssets="All" Include="..\MarketingBox.Reporting.Service.MyNoSql\MarketingBox.Reporting.Service.MyNoSql.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

@@ -11,6 +11,6 @@ namespace MarketingBox.Reporting.Service.Client
         {
         }
 
-        public IHelloService GetHelloService() => CreateGrpcService<IHelloService>();
+        public IReportService GetReportService() => CreateGrpcService<IReportService>();
     }
 }

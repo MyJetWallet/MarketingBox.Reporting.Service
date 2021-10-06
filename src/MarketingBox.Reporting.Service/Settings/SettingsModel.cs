@@ -22,5 +22,8 @@ namespace MarketingBox.Reporting.Service.Settings
 
         [YamlProperty("MarketingBoxReportingService.PostgresConnectionString")]
         public string PostgresConnectionString { get; set; }
+
+        [YamlProperty("MarketingBoxReportingService.AffiliateServiceUrl")]
+        public string AffiliateServiceUrl { get; set; }
     }
 }

@@ -17,12 +17,12 @@ namespace TestApp
 
 
             var factory = new ReportingServiceClientFactory("http://localhost:5001");
-            var client = factory.GetHelloService();
+            var client = factory.GetReportService();
 
-            var resp = await  client.SayHelloAsync(new HelloRequest(){Name = "Alex"});
-            Console.WriteLine(resp?.Message);
-
-            Console.WriteLine("End");
+            //var resp = await  client.SayHelloAsync(new HelloRequest(){Name = "Alex"});
+            //Console.WriteLine(resp?.Message);
+            //
+            //Console.WriteLine("End");
             Console.ReadLine();
         }
     }

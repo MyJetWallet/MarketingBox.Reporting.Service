@@ -1,4 +1,4 @@
-﻿namespace MarketingBox.Reporting.Service.Domain.Lead
+﻿namespace MarketingBox.Reporting.Service.Domain.Models.Lead
 {
     public enum LeadStatus
     {

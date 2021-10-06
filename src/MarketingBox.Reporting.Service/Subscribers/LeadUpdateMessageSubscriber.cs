@@ -5,10 +5,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MarketingBox.Affiliate.Service.Domain.Models.Campaigns;
+using MarketingBox.Affiliate.Service.Grpc;
+using MarketingBox.Affiliate.Service.Grpc.Models.Campaigns.Requests;
 using MarketingBox.Affiliate.Service.MyNoSql.Campaigns;
 using MarketingBox.Registration.Service.Messages.Leads;
+using MarketingBox.Reporting.Service.Domain.Extensions;
 using MarketingBox.Reporting.Service.Postgres;
 using MarketingBox.Reporting.Service.Postgres.ReadModels.Leads;
+using MarketingBox.Reporting.Service.Postgres.ReadModels.Reports;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Z.EntityFramework.Plus;
@@ -22,28 +27,49 @@ namespace MarketingBox.Reporting.Service.Subscribers
         private readonly ILogger<LeadUpdateMessageSubscriber> _logger;
         private readonly IMyNoSqlServerDataReader<CampaignNoSql> _campDataReader;
         private readonly DbContextOptionsBuilder<DatabaseContext> _dbContextOptionsBuilder;
+        private readonly ICampaignService _campaignService;
 
         public LeadUpdateMessageSubscriber(
             ISubscriber<MarketingBox.Registration.Service.Messages.Leads.LeadUpdateMessage> subscriber,
             ILogger<LeadUpdateMessageSubscriber> logger,
             IMyNoSqlServerDataReader<CampaignNoSql> campDataReader,
-            DbContextOptionsBuilder<DatabaseContext> dbContextOptionsBuilder)
+            DbContextOptionsBuilder<DatabaseContext> dbContextOptionsBuilder,
+            ICampaignService campaignService)
         {
             _logger = logger;
             _campDataReader = campDataReader;
             _dbContextOptionsBuilder = dbContextOptionsBuilder;
+            _campaignService = campaignService;
             subscriber.Subscribe(Consume);
         }
 
         private async ValueTask Consume(MarketingBox.Registration.Service.Messages.Leads.LeadUpdateMessage message)
         {
             _logger.LogInformation("Consuming message {@context}", message);
-            var campaign = _campDataReader.Get(
+            var campaignNoSql = _campDataReader.Get(
                 CampaignNoSql.GeneratePartitionKey(message.TenantId),
                 CampaignNoSql.GenerateRowKey(message.RouteInfo.CampaignId));
 
-            var payoutAmount = campaign.Payout.Plan == Plan.CPL ? campaign.Payout.Amount : 0;
-            var revenueAmount = campaign.Revenue.Plan == Plan.CPL ? campaign.Revenue.Amount : 0;
+            decimal payoutAmount;
+            decimal revenueAmount;
+            if (campaignNoSql == null)
+            {
+                var campaign = await _campaignService.GetAsync(new CampaignGetRequest() {CampaignId = message.RouteInfo.CampaignId});
+
+                if (campaign?.Campaign == null)
+                {
+                    _logger.LogWarning($"Company can not be found {message.RouteInfo.CampaignId} " + "{@context}", message);
+                    throw new Exception($"Company can not be found {message.RouteInfo.CampaignId} ");
+                }
+
+                payoutAmount =  campaign.Campaign.Payout.Plan == Plan.CPL ?  campaign.Campaign.Payout.Amount : 0;
+                revenueAmount = campaign.Campaign.Revenue.Plan == Plan.CPL ? campaign.Campaign.Revenue.Amount : 0;
+            }
+            else
+            {
+                payoutAmount = campaignNoSql.Payout.Plan == Plan.CPL ? campaignNoSql.Payout.Amount : 0;
+                revenueAmount = campaignNoSql.Revenue.Plan == Plan.CPL ? campaignNoSql.Revenue.Amount : 0;
+            }
 
             await using var context = new DatabaseContext(_dbContextOptionsBuilder.Options);
             await using var transaction = context.Database.BeginTransaction();
@@ -56,7 +82,6 @@ namespace MarketingBox.Reporting.Service.Subscribers
                 if (lead.Sequence == 0)
                 {
                     context.Leads.Add(lead);
-                    await context.SaveChangesAsync();
                 }
                 else
                 {
@@ -65,17 +90,65 @@ namespace MarketingBox.Reporting.Service.Subscribers
                                     x.Sequence <= lead.Sequence)
                         .UpdateAsync(x => new Lead
                         {
-                           
+                            AdditionalInfo = new LeadAdditionalInfo()
+                            {
+                                So = message.AdditionalInfo.So,
+                                Sub = message.AdditionalInfo.Sub,
+                                Sub1 = message.AdditionalInfo.Sub1,
+                                Sub10 = message.AdditionalInfo.Sub10,
+                                Sub2 = message.AdditionalInfo.Sub2,
+                                Sub3 = message.AdditionalInfo.Sub3,
+                                Sub4 = message.AdditionalInfo.Sub4,
+                                Sub5 = message.AdditionalInfo.Sub5,
+                                Sub6 = message.AdditionalInfo.Sub6,
+                                Sub7 = message.AdditionalInfo.Sub7,
+                                Sub8 = message.AdditionalInfo.Sub8,
+                                Sub9 = message.AdditionalInfo.Sub9
+                            },
+                            BrandInfo = new LeadBrandInfo()
+                            {
+                                AffiliateId = message.RouteInfo.AffiliateId,
+                                BoxId = message.RouteInfo.BoxId,
+                                Brand = message.RouteInfo.Brand,
+                                CampaignId = message.RouteInfo.CampaignId
+                            },
+                            CreatedAt = message.GeneralInfo.CreatedAt,
+                            Email = message.GeneralInfo.Email,
+                            FirstName = message.GeneralInfo.FirstName,
+                            Ip = message.GeneralInfo.Ip,
+                            LastName = message.GeneralInfo.LastName,
+                            LeadId = message.LeadId,
+                            Phone = message.GeneralInfo.Phone,
+                            Sequence = message.Sequence,
+                            Status = message.CallStatus.MapEnum<MarketingBox.Reporting.Service.Domain.Lead.LeadStatus>(),
+                            TenantId = message.TenantId,
+                            Type = message.Type.MapEnum<MarketingBox.Reporting.Service.Domain.Lead.LeadType>(),
+                            UniqueId = message.UniqueId,
                         });
 
                     if (affectedRowsCount != 1)
                     {
-                        throw new SequentialUpdateException($"No rows found to update the withdrawal {withdrawal.Id}");
+                        throw new Exception($"No rows found to update the lead {lead.LeadId}");
                     }
-
-                    await context.SaveChangesAsync();
                 }
 
+                var reportEntity = new ReportEntity()
+                {
+                    CreatedAt = lead.CreatedAt,
+                    AffiliateId = lead.BrandInfo.AffiliateId,
+                    BoxId = lead.BrandInfo.BoxId,
+                    BrandId = message.RouteInfo.BrandId,
+                    CampaignId = lead.BrandInfo.BoxId,
+                    LeadId = lead.LeadId,
+                    Payout = payoutAmount,
+                    ReportType = ReportType.Lead,
+                    Revenue = revenueAmount,
+                    TenantId = lead.TenantId,
+                    UniqueId = lead.UniqueId
+                };
+
+                context.Reports.Upsert(reportEntity);
+                await context.SaveChangesAsync();
                 await transaction.CommitAsync();
             }
             catch (DbUpdateException e) when (e.InnerException is PostgresException pgEx &&
@@ -129,9 +202,9 @@ namespace MarketingBox.Reporting.Service.Subscribers
                 LeadId = message.LeadId,
                 Phone = message.GeneralInfo.Phone,
                 Sequence = message.Sequence,
-                //Status = message.,
+                Status = message.CallStatus.MapEnum<MarketingBox.Reporting.Service.Domain.Lead.LeadStatus>(),
                 TenantId = message.TenantId,
-                //Type = message.,
+                Type = message.Type.MapEnum< MarketingBox.Reporting.Service.Domain.Lead.LeadType> (),
                 UniqueId = message.UniqueId,
             };
         }

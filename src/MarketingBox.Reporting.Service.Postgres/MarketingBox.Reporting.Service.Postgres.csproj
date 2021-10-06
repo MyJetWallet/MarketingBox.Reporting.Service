@@ -25,4 +25,8 @@
     <ProjectReference Include="..\MarketingBox.Reporting.Service.Domain\MarketingBox.Reporting.Service.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="ReadModels\Deposits\" />
+  </ItemGroup>
+
 </Project>

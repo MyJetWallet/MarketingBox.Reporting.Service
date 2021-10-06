@@ -15,6 +15,7 @@ using ProtoBuf.Grpc.Server;
 using SimpleTrading.BaseMetrics;
 using SimpleTrading.ServiceStatusReporterConnector;
 using System.Reflection;
+using MarketingBox.Affiliate.Service.Grpc;
 using MarketingBox.Reporting.Service.Postgres;
 using MyJetWallet.Sdk.Postgres;
 
@@ -59,7 +60,7 @@ namespace MarketingBox.Reporting.Service
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapGrpcSchema<HelloService, IHelloService>();
+                endpoints.MapGrpcSchema<ReportService, IReportService>();
 
                 endpoints.MapGrpcSchemaRegistry();
 

@@ -11,7 +11,7 @@ namespace MarketingBox.Reporting.Service.Client
         {
             var factory = new ReportingServiceClientFactory(grpcServiceUrl);
 
-            builder.RegisterInstance(factory.GetHelloService()).As<IHelloService>().SingleInstance();
+            builder.RegisterInstance(factory.GetReportService()).As<IReportService>().SingleInstance();
         }
     }
 }
