@@ -38,7 +38,7 @@ namespace MarketingBox.Reporting.Service
                 Program.Settings.PostgresConnectionString,
                 o => new DatabaseContext(o));
 
-            DatabaseContext.LoggerFactory = null;
+            //DatabaseContext.LoggerFactory = null;
 
             services.AddMyTelemetry("SP-", Program.Settings.ZipkinUrl);
         }

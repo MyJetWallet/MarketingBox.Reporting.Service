@@ -3,15 +3,17 @@ using System;
 using MarketingBox.Reporting.Service.Postgres;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace MarketingBox.Reporting.Service.Postgres.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20211007094100_fix_1")]
+    partial class fix_1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -23,7 +25,9 @@ namespace MarketingBox.Reporting.Service.Postgres.Migrations
             modelBuilder.Entity("MarketingBox.Reporting.Service.Postgres.ReadModels.Leads.Lead", b =>
                 {
                     b.Property<long>("LeadId")
-                        .HasColumnType("bigint");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -114,7 +118,9 @@ namespace MarketingBox.Reporting.Service.Postgres.Migrations
                     b.OwnsOne("MarketingBox.Reporting.Service.Postgres.ReadModels.Leads.LeadAdditionalInfo", "AdditionalInfo", b1 =>
                         {
                             b1.Property<long>("LeadId")
-                                .HasColumnType("bigint");
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("bigint")
+                                .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                             b1.Property<string>("So")
                                 .HasColumnType("text");
@@ -163,7 +169,9 @@ namespace MarketingBox.Reporting.Service.Postgres.Migrations
                     b.OwnsOne("MarketingBox.Reporting.Service.Postgres.ReadModels.Leads.LeadBrandInfo", "BrandInfo", b1 =>
                         {
                             b1.Property<long>("LeadId")
-                                .HasColumnType("bigint");
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("bigint")
+                                .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                             b1.Property<long>("AffiliateId")
                                 .HasColumnType("bigint");

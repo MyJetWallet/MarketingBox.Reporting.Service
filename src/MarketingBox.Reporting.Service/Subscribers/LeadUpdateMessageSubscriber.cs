@@ -54,7 +54,7 @@ namespace MarketingBox.Reporting.Service.Subscribers
             decimal revenueAmount;
             if (campaignNoSql == null)
             {
-                var campaign = await _campaignService.GetAsync(new CampaignGetRequest() {CampaignId = message.RouteInfo.CampaignId});
+                var campaign = await _campaignService.GetAsync(new CampaignGetRequest() { CampaignId = message.RouteInfo.CampaignId });
 
                 if (campaign?.Campaign == null)
                 {
@@ -62,7 +62,7 @@ namespace MarketingBox.Reporting.Service.Subscribers
                     throw new Exception($"Company can not be found {message.RouteInfo.CampaignId} ");
                 }
 
-                payoutAmount =  campaign.Campaign.Payout.Plan == Plan.CPL ?  campaign.Campaign.Payout.Amount : 0;
+                payoutAmount = campaign.Campaign.Payout.Plan == Plan.CPL ? campaign.Campaign.Payout.Amount : 0;
                 revenueAmount = campaign.Campaign.Revenue.Plan == Plan.CPL ? campaign.Campaign.Revenue.Amount : 0;
             }
             else
@@ -72,64 +72,21 @@ namespace MarketingBox.Reporting.Service.Subscribers
             }
 
             await using var context = new DatabaseContext(_dbContextOptionsBuilder.Options);
-            await using var transaction = context.Database.BeginTransaction();
 
             var lead = MapToReadModel(message);
+            await using var transaction = context.Database.BeginTransaction();
 
             try
             {
-                //
-                if (lead.Sequence == 0)
-                {
-                    context.Leads.Add(lead);
-                }
-                else
-                {
-                    var affectedRowsCount = await context.Leads
-                        .Where(x => x.LeadId == lead.LeadId &&
-                                    x.Sequence <= lead.Sequence)
-                        .UpdateAsync(x => new Lead
-                        {
-                            AdditionalInfo = new LeadAdditionalInfo()
-                            {
-                                So = message.AdditionalInfo.So,
-                                Sub = message.AdditionalInfo.Sub,
-                                Sub1 = message.AdditionalInfo.Sub1,
-                                Sub10 = message.AdditionalInfo.Sub10,
-                                Sub2 = message.AdditionalInfo.Sub2,
-                                Sub3 = message.AdditionalInfo.Sub3,
-                                Sub4 = message.AdditionalInfo.Sub4,
-                                Sub5 = message.AdditionalInfo.Sub5,
-                                Sub6 = message.AdditionalInfo.Sub6,
-                                Sub7 = message.AdditionalInfo.Sub7,
-                                Sub8 = message.AdditionalInfo.Sub8,
-                                Sub9 = message.AdditionalInfo.Sub9
-                            },
-                            BrandInfo = new LeadBrandInfo()
-                            {
-                                AffiliateId = message.RouteInfo.AffiliateId,
-                                BoxId = message.RouteInfo.BoxId,
-                                Brand = message.RouteInfo.Brand,
-                                CampaignId = message.RouteInfo.CampaignId
-                            },
-                            CreatedAt = message.GeneralInfo.CreatedAt,
-                            Email = message.GeneralInfo.Email,
-                            FirstName = message.GeneralInfo.FirstName,
-                            Ip = message.GeneralInfo.Ip,
-                            LastName = message.GeneralInfo.LastName,
-                            LeadId = message.LeadId,
-                            Phone = message.GeneralInfo.Phone,
-                            Sequence = message.Sequence,
-                            Status = message.CallStatus.MapEnum<MarketingBox.Reporting.Service.Domain.Lead.LeadStatus>(),
-                            TenantId = message.TenantId,
-                            Type = message.Type.MapEnum<MarketingBox.Reporting.Service.Domain.Lead.LeadType>(),
-                            UniqueId = message.UniqueId,
-                        });
+                var affectedRowsCount = await context.Leads.Upsert(lead)
+                    .UpdateIf((prevLead) => prevLead.Sequence < lead.Sequence)
+                    .RunAsync();
 
-                    if (affectedRowsCount != 1)
-                    {
-                        throw new Exception($"No rows found to update the lead {lead.LeadId}");
-                    }
+                if (affectedRowsCount != 1)
+                {
+                    _logger.LogInformation("There is nothing to update: {@context}", message);
+                    await transaction.RollbackAsync();
+                    return;
                 }
 
                 var reportEntity = new ReportEntity()
@@ -147,19 +104,13 @@ namespace MarketingBox.Reporting.Service.Subscribers
                     UniqueId = lead.UniqueId
                 };
 
-                context.Reports.Upsert(reportEntity);
-                await context.SaveChangesAsync();
+                await context.Reports.Upsert(reportEntity).RunAsync();
+
                 await transaction.CommitAsync();
             }
-            catch (DbUpdateException e) when (e.InnerException is PostgresException pgEx &&
-                                              pgEx.SqlState == PostgresErrorCodes.UniqueViolation)
+            catch (Exception e)
             {
-                await transaction.RollbackAsync();
-
-                throw new Exception(); //AlreadyUpdatedException(e);
-            }
-            catch (Exception)
-            {
+                _logger.LogInformation(e, "Error during consumptions {@context}", message);
                 await transaction.RollbackAsync();
 
                 throw;
@@ -194,7 +145,7 @@ namespace MarketingBox.Reporting.Service.Subscribers
                     Brand = message.RouteInfo.Brand,
                     CampaignId = message.RouteInfo.CampaignId
                 },
-                CreatedAt = message.GeneralInfo.CreatedAt,
+                CreatedAt = DateTime.SpecifyKind(message.GeneralInfo.CreatedAt, DateTimeKind.Utc),
                 Email = message.GeneralInfo.Email,
                 FirstName = message.GeneralInfo.FirstName,
                 Ip = message.GeneralInfo.Ip,
@@ -204,7 +155,7 @@ namespace MarketingBox.Reporting.Service.Subscribers
                 Sequence = message.Sequence,
                 Status = message.CallStatus.MapEnum<MarketingBox.Reporting.Service.Domain.Lead.LeadStatus>(),
                 TenantId = message.TenantId,
-                Type = message.Type.MapEnum< MarketingBox.Reporting.Service.Domain.Lead.LeadType> (),
+                Type = message.Type.MapEnum<MarketingBox.Reporting.Service.Domain.Lead.LeadType>(),
                 UniqueId = message.UniqueId,
             };
         }

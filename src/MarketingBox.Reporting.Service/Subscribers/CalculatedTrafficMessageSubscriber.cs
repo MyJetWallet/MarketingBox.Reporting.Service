@@ -39,38 +39,22 @@ namespace MarketingBox.Reporting.Service.Subscribers
             decimal.TryParse(message.PayoutAmount, out var payoutAmount);
             decimal.TryParse(message.RevenueAmount, out var revenueAmount);
 
-            try
+            var reportEntity = new ReportEntity()
             {
-                var reportEntity = new ReportEntity()
-                {
-                    CreatedAt = message.CreatedAt,
-                    AffiliateId = message.AffiliateId,
-                    BoxId = message.BoxId,
-                    BrandId = message.BrandId,
-                    CampaignId = message.CampaignId,
-                    LeadId = message.LeadId,
-                    Payout = payoutAmount,
-                    ReportType = ReportType.Deposit,
-                    Revenue = revenueAmount,
-                    TenantId = message.TenantId,
-                };
+                //Timestamp
+                CreatedAt = DateTime.SpecifyKind(message.CreatedAt, DateTimeKind.Utc),
+                AffiliateId = message.AffiliateId,
+                BoxId = message.BoxId,
+                BrandId = message.BrandId,
+                CampaignId = message.CampaignId,
+                LeadId = message.LeadId,
+                Payout = payoutAmount,
+                ReportType = ReportType.Deposit,
+                Revenue = revenueAmount,
+                TenantId = message.TenantId,
+            };
 
-                context.Reports.Upsert(reportEntity);
-                await context.SaveChangesAsync();
-            }
-            catch (DbUpdateException e) when (e.InnerException is PostgresException pgEx &&
-                                              pgEx.SqlState == PostgresErrorCodes.UniqueViolation)
-            {
-                //await transaction.RollbackAsync();
-
-                throw new Exception(); //AlreadyUpdatedException(e);
-            }
-            //catch (Exception)
-            //{
-            //    //await transaction.RollbackAsync();
-
-            //    throw;
-            //}
+            var val = await context.Reports.Upsert(reportEntity).RunAsync();
 
             _logger.LogInformation("Has been consumed {@context}", message);
         }

@@ -4,6 +4,7 @@
     {
         Unsigned,
         Lead,
-        Failure
+        Failure,
+        SoftFailure
     }
 }

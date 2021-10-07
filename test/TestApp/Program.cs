@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using MarketingBox.Reporting.Service.Client;
 using MarketingBox.Reporting.Service.Grpc.Models;
+using MarketingBox.Reporting.Service.Grpc.Models.Reports.Requests;
 using ProtoBuf.Grpc.Client;
 
 namespace TestApp
@@ -16,10 +17,20 @@ namespace TestApp
             Console.ReadLine();
 
 
-            var factory = new ReportingServiceClientFactory("http://localhost:5001");
+            var factory = new ReportingServiceClientFactory("http://localhost:12350");
             var client = factory.GetReportService();
 
-            //var resp = await  client.SayHelloAsync(new HelloRequest(){Name = "Alex"});
+            var search = await client.SearchAsync(new ReportSearchRequest()
+            {
+                TenantId = "default-tenant-id",
+                ToDate = DateTime.UtcNow,
+                Asc = true,
+                Cursor = 0,
+                FromDate = DateTime.Parse("2021-10-07 14:03:10"),
+                Take = 1000
+            });
+
+        //var resp = await  client.SayHelloAsync(new HelloRequest(){Name = "Alex"});
             //Console.WriteLine(resp?.Message);
             //
             //Console.WriteLine("End");
