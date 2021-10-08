@@ -119,9 +119,9 @@ namespace MarketingBox.Reporting.Service.Subscribers
             _logger.LogInformation("Has been consumed {@context}", message);
         }
 
-        private static Lead MapToReadModel(LeadUpdateMessage message)
+        private static Postgres.ReadModels.Leads.Lead MapToReadModel(LeadUpdateMessage message)
         {
-            return new Lead()
+            return new Postgres.ReadModels.Leads.Lead()
             {
                 AdditionalInfo = new LeadAdditionalInfo()
                 {
@@ -142,7 +142,7 @@ namespace MarketingBox.Reporting.Service.Subscribers
                 {
                     AffiliateId = message.RouteInfo.AffiliateId,
                     BoxId = message.RouteInfo.BoxId,
-                    Brand = message.RouteInfo.Brand,
+                    BrandId = message.RouteInfo.BrandId,
                     CampaignId = message.RouteInfo.CampaignId
                 },
                 CreatedAt = DateTime.SpecifyKind(message.GeneralInfo.CreatedAt, DateTimeKind.Utc),

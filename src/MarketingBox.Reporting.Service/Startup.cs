@@ -38,7 +38,7 @@ namespace MarketingBox.Reporting.Service
                 Program.Settings.PostgresConnectionString,
                 o => new DatabaseContext(o));
 
-            //DatabaseContext.LoggerFactory = null;
+            DatabaseContext.LoggerFactory = null;
 
             services.AddMyTelemetry("SP-", Program.Settings.ZipkinUrl);
         }
@@ -61,6 +61,7 @@ namespace MarketingBox.Reporting.Service
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapGrpcSchema<ReportService, IReportService>();
+                endpoints.MapGrpcSchema<LeadService, ILeadService>();
 
                 endpoints.MapGrpcSchemaRegistry();
 

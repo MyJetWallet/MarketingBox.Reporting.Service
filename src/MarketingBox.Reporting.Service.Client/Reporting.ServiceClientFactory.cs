@@ -12,5 +12,7 @@ namespace MarketingBox.Reporting.Service.Client
         }
 
         public IReportService GetReportService() => CreateGrpcService<IReportService>();
+
+        public ILeadService GetLeadService() => CreateGrpcService<ILeadService>();
     }
 }
