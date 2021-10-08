@@ -7,7 +7,7 @@ namespace MarketingBox.Reporting.Service.Client
 {
     public static class AutofacHelper
     {
-        public static void RegisterAssetsDictionaryClient(this ContainerBuilder builder, string grpcServiceUrl)
+        public static void RegisterReportingServiceClient(this ContainerBuilder builder, string grpcServiceUrl)
         {
             var factory = new ReportingServiceClientFactory(grpcServiceUrl);
 
