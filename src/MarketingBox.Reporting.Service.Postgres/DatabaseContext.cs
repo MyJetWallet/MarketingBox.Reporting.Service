@@ -48,9 +48,8 @@ namespace MarketingBox.Reporting.Service.Postgres
         {
             modelBuilder.Entity<Lead>().ToTable(LeadTableName);
             modelBuilder.Entity<Lead>().HasKey(e => e.LeadId);
-            modelBuilder.Entity<Lead>().OwnsOne(x => x.BrandInfo);
-            modelBuilder.Entity<Lead>().OwnsOne(x => x.AdditionalInfo);
             modelBuilder.Entity<Lead>().HasIndex(e => new { e.TenantId, e.LeadId });
+            modelBuilder.Entity<Lead>().HasIndex(e => new { e.AffiliateId });
             modelBuilder.Entity <Lead> ().Property(m => m.LeadId)
                 .ValueGeneratedNever();
             //TODO: This IS NOT SUPPORTED BY EF BUT IT IS WRITTEN IN MIGRATION

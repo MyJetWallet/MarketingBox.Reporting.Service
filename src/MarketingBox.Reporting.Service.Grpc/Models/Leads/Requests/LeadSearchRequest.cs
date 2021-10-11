@@ -6,8 +6,8 @@ namespace MarketingBox.Reporting.Service.Grpc.Models.Reports.Requests
     [DataContract]
     public class LeadSearchRequest
     {
-        //[DataMember(Order = 1)]
-        //public long? AffiliateId { get; set; }
+        [DataMember(Order = 1)]
+        public long? AffiliateId { get; set; }
 
         [DataMember(Order = 10)]
         public long? Cursor { get; set; }

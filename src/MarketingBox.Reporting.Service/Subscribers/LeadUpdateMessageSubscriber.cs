@@ -17,8 +17,6 @@ using MarketingBox.Reporting.Service.Postgres.ReadModels.Reports;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Z.EntityFramework.Plus;
-using LeadAdditionalInfo = MarketingBox.Reporting.Service.Postgres.ReadModels.Leads.LeadAdditionalInfo;
-using LeadBrandInfo = MarketingBox.Reporting.Service.Postgres.ReadModels.Leads.LeadBrandInfo;
 
 namespace MarketingBox.Reporting.Service.Subscribers
 {
@@ -92,10 +90,10 @@ namespace MarketingBox.Reporting.Service.Subscribers
                 var reportEntity = new ReportEntity()
                 {
                     CreatedAt = lead.CreatedAt,
-                    AffiliateId = lead.BrandInfo.AffiliateId,
-                    BoxId = lead.BrandInfo.BoxId,
-                    BrandId = message.RouteInfo.BrandId,
-                    CampaignId = lead.BrandInfo.BoxId,
+                    AffiliateId = lead.AffiliateId,
+                    BoxId = lead.BoxId,
+                    BrandId = lead.BrandId,
+                    CampaignId = lead.CampaignId,
                     LeadId = lead.LeadId,
                     Payout = payoutAmount,
                     ReportType = ReportType.Lead,
@@ -123,28 +121,24 @@ namespace MarketingBox.Reporting.Service.Subscribers
         {
             return new Postgres.ReadModels.Leads.Lead()
             {
-                AdditionalInfo = new LeadAdditionalInfo()
-                {
-                    So = message.AdditionalInfo.So,
-                    Sub = message.AdditionalInfo.Sub,
-                    Sub1 = message.AdditionalInfo.Sub1,
-                    Sub10 = message.AdditionalInfo.Sub10,
-                    Sub2 = message.AdditionalInfo.Sub2,
-                    Sub3 = message.AdditionalInfo.Sub3,
-                    Sub4 = message.AdditionalInfo.Sub4,
-                    Sub5 = message.AdditionalInfo.Sub5,
-                    Sub6 = message.AdditionalInfo.Sub6,
-                    Sub7 = message.AdditionalInfo.Sub7,
-                    Sub8 = message.AdditionalInfo.Sub8,
-                    Sub9 = message.AdditionalInfo.Sub9
-                },
-                BrandInfo = new LeadBrandInfo()
-                {
-                    AffiliateId = message.RouteInfo.AffiliateId,
-                    BoxId = message.RouteInfo.BoxId,
-                    BrandId = message.RouteInfo.BrandId,
-                    CampaignId = message.RouteInfo.CampaignId
-                },
+
+                So = message.AdditionalInfo.So,
+                Sub = message.AdditionalInfo.Sub,
+                Sub1 = message.AdditionalInfo.Sub1,
+                Sub10 = message.AdditionalInfo.Sub10,
+                Sub2 = message.AdditionalInfo.Sub2,
+                Sub3 = message.AdditionalInfo.Sub3,
+                Sub4 = message.AdditionalInfo.Sub4,
+                Sub5 = message.AdditionalInfo.Sub5,
+                Sub6 = message.AdditionalInfo.Sub6,
+                Sub7 = message.AdditionalInfo.Sub7,
+                Sub8 = message.AdditionalInfo.Sub8,
+                Sub9 = message.AdditionalInfo.Sub9,
+
+                AffiliateId = message.RouteInfo.AffiliateId,
+                BoxId = message.RouteInfo.BoxId,
+                BrandId = message.RouteInfo.BrandId,
+                CampaignId = message.RouteInfo.CampaignId,
                 CreatedAt = DateTime.SpecifyKind(message.GeneralInfo.CreatedAt, DateTimeKind.Utc),
                 Email = message.GeneralInfo.Email,
                 FirstName = message.GeneralInfo.FirstName,

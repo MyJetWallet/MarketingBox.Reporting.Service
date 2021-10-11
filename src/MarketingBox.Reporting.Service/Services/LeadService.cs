@@ -37,6 +37,11 @@ namespace MarketingBox.Reporting.Service.Services
                     query = query.Where(x => x.TenantId == request.TenantId);
                 }
 
+                if (request.AffiliateId.HasValue)
+                {
+                    query = query.Where(x => x.AffiliateId == request.AffiliateId);
+                }
+
                 var limit = request.Take <= 0 ? 1000 : request.Take;
                 if (request.Asc)
                 {
@@ -94,18 +99,18 @@ namespace MarketingBox.Reporting.Service.Services
                 Sequence = lead.Sequence,
                 AdditionalInfo = new LeadAdditionalInfo()
                 {
-                    So = lead.AdditionalInfo.So,
-                    Sub = lead.AdditionalInfo.Sub,
-                    Sub1 = lead.AdditionalInfo.Sub1,
-                    Sub10 = lead.AdditionalInfo.Sub10,
-                    Sub2 = lead.AdditionalInfo.Sub2,
-                    Sub3 = lead.AdditionalInfo.Sub3,
-                    Sub4 = lead.AdditionalInfo.Sub4,
-                    Sub5 = lead.AdditionalInfo.Sub5,
-                    Sub6 = lead.AdditionalInfo.Sub6,
-                    Sub7 = lead.AdditionalInfo.Sub7,
-                    Sub8 = lead.AdditionalInfo.Sub8,
-                    Sub9 = lead.AdditionalInfo.Sub9,
+                    So =   lead.So,
+                    Sub =  lead.Sub,
+                    Sub1 = lead.Sub1,
+                    Sub10 =lead.Sub10,
+                    Sub2 = lead.Sub2,
+                    Sub3 = lead.Sub3,
+                    Sub4 = lead.Sub4,
+                    Sub5 = lead.Sub5,
+                    Sub6 = lead.Sub6,
+                    Sub7 = lead.Sub7,
+                    Sub8 = lead.Sub8,
+                    Sub9 = lead.Sub9,
                 },
                 CallStatus = lead.Status.MapEnum<MarketingBox.Reporting.Service.Domain.Models.Lead.LeadStatus>(),
                 GeneralInfo = new LeadGeneralInfo()
@@ -119,13 +124,13 @@ namespace MarketingBox.Reporting.Service.Services
                 },
                 RouteInfo = new LeadRouteInfo()
                 {
-                    AffiliateId = lead.BrandInfo.AffiliateId,
-                    CampaignId = lead.BrandInfo.CampaignId,
-                    BoxId = lead.BrandInfo.BoxId,
-                    BrandId = lead.BrandInfo.BrandId,
+                    AffiliateId = lead.AffiliateId,
+                    CampaignId = lead.CampaignId,
+                    BoxId = lead.BoxId,
+                    BrandId = lead.BrandId,
                 },
                 TenantId = lead.TenantId,
-                Type = lead.Status.MapEnum<MarketingBox.Reporting.Service.Domain.Models.Lead.LeadType>(),
+                Type = lead.Type.MapEnum<MarketingBox.Reporting.Service.Domain.Models.Lead.LeadType>(),
                 UniqueId = lead.UniqueId
             };
         }

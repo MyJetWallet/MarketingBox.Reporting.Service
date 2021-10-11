@@ -18,22 +18,31 @@ namespace TestApp
 
 
             var factory = new ReportingServiceClientFactory("http://localhost:12350");
-            var client = factory.GetReportService();
+            var reportService = factory.GetReportService();
+            var leadService = factory.GetLeadService();
 
-            var search = await client.SearchAsync(new ReportSearchRequest()
+            var search = await reportService.SearchAsync(new ReportSearchRequest()
             {
                 TenantId = "default-tenant-id",
                 ToDate = DateTime.UtcNow,
                 Asc = true,
-                Cursor = 0,
+                Cursor = null,
                 FromDate = DateTime.Parse("2021-10-07 14:03:10"),
                 Take = 1000
             });
 
+            var searchLead = await leadService.SearchAsync(new LeadSearchRequest()
+            {
+                TenantId = "default-tenant-id",
+                Asc = true,
+                Cursor = null,
+                Take = 50
+            });
+
         //var resp = await  client.SayHelloAsync(new HelloRequest(){Name = "Alex"});
-            //Console.WriteLine(resp?.Message);
-            //
-            //Console.WriteLine("End");
+        //Console.WriteLine(resp?.Message);
+        //
+        //Console.WriteLine("End");
             Console.ReadLine();
         }
     }
