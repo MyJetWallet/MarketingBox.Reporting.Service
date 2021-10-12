@@ -37,11 +37,11 @@ namespace MarketingBox.Reporting.Service.Modules
                 "marketingbox-reporting-service",
                 TopicQueueType.Permanent);
 
-            // subscriber (ISubscriber<MarketingBox.TrafficEngine.Service.Messages.Traffic.CalculatedTrafficMessage>)
-            builder.RegisterMyServiceBusSubscriberSingle<MarketingBox.TrafficEngine.Service.Messages.Traffic.CalculatedTrafficMessage>(
+            // subscriber (ISubscriber<MarketingBox.Registration.Service.Messages.Deposits.DepositUpdateMessage>)
+            builder.RegisterMyServiceBusSubscriberSingle<MarketingBox.Registration.Service.Messages.Deposits.DepositUpdateMessage>(
                 serviceBusClient,
-                MarketingBox.TrafficEngine.Service.Messages.Topics.CalculatedTrafficTopic,
-                "marketingbox-reporting-service",
+                MarketingBox.Registration.Service.Messages.Topics.DepositUpdateTopic,
+                "marketingbox-trafficengine-service",
                 TopicQueueType.Permanent);
 
             #endregion
@@ -50,7 +50,7 @@ namespace MarketingBox.Reporting.Service.Modules
                 .SingleInstance()
                 .AutoActivate();
 
-            builder.RegisterType<CalculatedTrafficMessageSubscriber>()
+            builder.RegisterType<DepositUpdateMessageSubscriber>()
                 .SingleInstance()
                 .AutoActivate();
         }
