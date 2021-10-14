@@ -24,9 +24,7 @@ namespace MarketingBox.Reporting.Service.Modules
                     Program.ReloadedSettings(e => e.MarketingBoxServiceBusHostPort),
                     ApplicationEnvironment.HostName, Program.LogFactory);
 
-            var subs = new MyNoSqlReadRepository<CampaignNoSql>(noSqlClient, CampaignNoSql.TableName);
-            builder.RegisterInstance(subs)
-                .As<IMyNoSqlServerDataReader<CampaignNoSql>>();
+            builder.RegisterMyNoSqlReader<CampaignNoSql>(noSqlClient, CampaignNoSql.TableName);
 
             #region MarketingBox.Registration.Service.Messages.Leads.LeadBusUpdatedMessage
 
@@ -41,7 +39,7 @@ namespace MarketingBox.Reporting.Service.Modules
             builder.RegisterMyServiceBusSubscriberSingle<MarketingBox.Registration.Service.Messages.Deposits.DepositUpdateMessage>(
                 serviceBusClient,
                 MarketingBox.Registration.Service.Messages.Topics.DepositUpdateTopic,
-                "marketingbox-trafficengine-service",
+                "marketingbox-reporting-service",
                 TopicQueueType.Permanent);
 
             #endregion

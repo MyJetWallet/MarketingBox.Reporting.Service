@@ -3,7 +3,10 @@ using MarketingBox.Affiliate.Service.Domain.Models.Campaigns;
 using MarketingBox.Affiliate.Service.Grpc;
 using MarketingBox.Affiliate.Service.Grpc.Models.Campaigns.Requests;
 using MarketingBox.Affiliate.Service.MyNoSql.Campaigns;
+using MarketingBox.Registration.Service.Messages.Deposits;
+using MarketingBox.Reporting.Service.Domain.Extensions;
 using MarketingBox.Reporting.Service.Postgres;
+using MarketingBox.Reporting.Service.Postgres.ReadModels.Deposits;
 using MarketingBox.Reporting.Service.Postgres.ReadModels.Reports;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -39,7 +42,6 @@ namespace MarketingBox.Reporting.Service.Subscribers
             _logger.LogInformation("Consuming message {@context}", message);
 
             await using var context = new DatabaseContext(_dbContextOptionsBuilder.Options);
-            //await using var transaction = context.Database.BeginTransaction();
 
             var campaignNoSql = _campDataReader.Get(
                 CampaignNoSql.GeneratePartitionKey(message.TenantId),
@@ -82,24 +84,71 @@ namespace MarketingBox.Reporting.Service.Subscribers
                 revenueAmount = campaign.Campaign.Revenue.Plan == Plan.CPA ? campaign.Campaign.Revenue.Amount : 0;
             }
 
-            var reportEntity = new ReportEntity()
+            var deposit = MapDeposit(message);
+            await using var transaction = context.Database.BeginTransaction();
+            try
             {
-                //Timestamp
-                CreatedAt = DateTime.SpecifyKind(message.CreatedAt, DateTimeKind.Utc),
+                var affectedRowsCount = await context.Deposits.Upsert(deposit)
+                    .UpdateIf((depositPrev) => depositPrev.Sequence < deposit.Sequence)
+                    .RunAsync();
+
+                if (affectedRowsCount != 1)
+                {
+                    _logger.LogInformation("There is nothing to update: {@context}", message);
+                    await transaction.RollbackAsync();
+                    return;
+                }
+
+                var reportEntity = new ReportEntity()
+                {
+                    //Timestamp
+                    CreatedAt = DateTime.SpecifyKind(message.CreatedAt, DateTimeKind.Utc),
+                    AffiliateId = message.AffiliateId,
+                    BoxId = message.BoxId,
+                    BrandId = message.BrandId,
+                    CampaignId = message.CampaignId,
+                    LeadId = message.LeadId,
+                    Payout = payoutAmount,
+                    ReportType = ReportType.Deposit,
+                    Revenue = revenueAmount,
+                    TenantId = message.TenantId,
+                };
+
+                var val = await context.Reports.Upsert(reportEntity).RunAsync();
+
+                await transaction.CommitAsync();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError("Error during processing of the deposit update: {@context}", e, message);
+                await transaction.RollbackAsync();
+                throw;
+            }
+
+            _logger.LogInformation("Has been consumed {@context}", message);
+        }
+
+        private static Deposit MapDeposit(DepositUpdateMessage message)
+        {
+            return new Deposit()
+            {
+                LeadId = message.LeadId,
+                Sequence = message.Sequence,
                 AffiliateId = message.AffiliateId,
                 BoxId = message.BoxId,
                 BrandId = message.BrandId,
                 CampaignId = message.CampaignId,
-                LeadId = message.LeadId,
-                Payout = payoutAmount,
-                ReportType = ReportType.Deposit,
-                Revenue = revenueAmount,
+                ConversionDate = message.ConversionDate?.ToUtc(),
+                Country = message.Country,
+                CustomerId = message.CustomerId,
+                Email = message.Email,
+                RegisterDate = message.RegisterDate.ToUtc(),
+                CreatedAt = message.CreatedAt.ToUtc(),
                 TenantId = message.TenantId,
+                Type = message.Approved.MapEnum<MarketingBox.Reporting.Service.Domain.Deposit.ApprovedType>(),
+                UniqueId = message.UniqueId,
+                BrandStatus = message.BrandStatus
             };
-
-            var val = await context.Reports.Upsert(reportEntity).RunAsync();
-
-            _logger.LogInformation("Has been consumed {@context}", message);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using MarketingBox.Reporting.Service.Postgres.ReadModels.Leads;
+﻿using MarketingBox.Reporting.Service.Postgres.ReadModels.Deposits;
+using MarketingBox.Reporting.Service.Postgres.ReadModels.Leads;
 using MarketingBox.Reporting.Service.Postgres.ReadModels.Reports;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -15,10 +16,13 @@ namespace MarketingBox.Reporting.Service.Postgres
 
         public const string LeadTableName = "leads";
         public const string ReportTableName = "reports";
+        public const string DepositTableName = "deposits";
 
         public DbSet<Lead> Leads { get; set; }
 
         public DbSet<ReportEntity> Reports { get; set; }
+
+        public DbSet<Deposit> Deposits { get; set; }
 
         public DatabaseContext(DbContextOptions options) : base(options)
         {
@@ -39,6 +43,7 @@ namespace MarketingBox.Reporting.Service.Postgres
             modelBuilder.HasDefaultSchema(Schema);
 
             SetLeadReadModel(modelBuilder);
+            SetDepositReadModel(modelBuilder);
             SetReportEntity(modelBuilder);
 
             base.OnModelCreating(modelBuilder);
@@ -52,8 +57,16 @@ namespace MarketingBox.Reporting.Service.Postgres
             modelBuilder.Entity<Lead>().HasIndex(e => new { e.AffiliateId });
             modelBuilder.Entity <Lead> ().Property(m => m.LeadId)
                 .ValueGeneratedNever();
-            //TODO: This IS NOT SUPPORTED BY EF BUT IT IS WRITTEN IN MIGRATION
-            // 
+        }
+
+        private void SetDepositReadModel(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Deposit>().ToTable(DepositTableName);
+            modelBuilder.Entity<Deposit>().HasKey(e => e.LeadId);
+            modelBuilder.Entity<Deposit>().HasIndex(e => new { e.TenantId, e.LeadId });
+            modelBuilder.Entity<Deposit>().HasIndex(e => new { e.AffiliateId });
+            modelBuilder.Entity<Deposit>().Property(m => m.LeadId)
+                .ValueGeneratedNever();
         }
 
         private void SetReportEntity(ModelBuilder modelBuilder)

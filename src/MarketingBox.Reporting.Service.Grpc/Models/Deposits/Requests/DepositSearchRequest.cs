@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace MarketingBox.Reporting.Service.Grpc.Models.Leads.Requests
+namespace MarketingBox.Reporting.Service.Grpc.Models.Deposits.Requests
 {
     [DataContract]
-    public class LeadSearchRequest
+    public class DepositSearchRequest
     {
         [DataMember(Order = 1)]
         public long? AffiliateId { get; set; }

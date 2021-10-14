@@ -62,6 +62,7 @@ namespace MarketingBox.Reporting.Service
             {
                 endpoints.MapGrpcSchema<ReportService, IReportService>();
                 endpoints.MapGrpcSchema<LeadService, ILeadService>();
+                endpoints.MapGrpcSchema<DepositService, IDepositService>();
 
                 endpoints.MapGrpcSchemaRegistry();
 
