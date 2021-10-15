@@ -42,24 +42,29 @@ namespace MarketingBox.Reporting.Service.Services
                     query = query.Where(x => x.AffiliateId == request.AffiliateId);
                 }
 
+                if (request.LeadId.HasValue)
+                {
+                    query = query.Where(x => x.LeadId == request.LeadId);
+                }
+
                 var limit = request.Take <= 0 ? 1000 : request.Take;
                 if (request.Asc)
                 {
                     if (request.Cursor != null)
                     {
-                        query = query.Where(x => x.LeadId > request.Cursor);
+                        query = query.Where(x => x.DepositId > request.Cursor);
                     }
 
-                    query = query.OrderBy(x => x.LeadId);
+                    query = query.OrderBy(x => x.DepositId);
                 }
                 else
                 {
                     if (request.Cursor != null)
                     {
-                        query = query.Where(x => x.LeadId < request.Cursor);
+                        query = query.Where(x => x.DepositId < request.Cursor);
                     }
 
-                    query = query.OrderByDescending(x => x.LeadId);
+                    query = query.OrderByDescending(x => x.DepositId);
                 }
 
                 query = query.Take(limit);
@@ -110,7 +115,8 @@ namespace MarketingBox.Reporting.Service.Services
                 RegisterDate = deposit.RegisterDate.UtcDateTime,
                 TenantId = deposit.TenantId,
                 Type = deposit.Type.MapEnum<MarketingBox.Reporting.Service.Domain.Models.Deposit.ApprovedType>(),
-                UniqueId = deposit.UniqueId
+                UniqueId = deposit.UniqueId,
+                DepositId = deposit.DepositId
             };
         }
     }

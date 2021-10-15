@@ -147,7 +147,8 @@ namespace MarketingBox.Reporting.Service.Subscribers
                 TenantId = message.TenantId,
                 Type = message.Approved.MapEnum<MarketingBox.Reporting.Service.Domain.Deposit.ApprovedType>(),
                 UniqueId = message.UniqueId,
-                BrandStatus = message.BrandStatus
+                BrandStatus = message.BrandStatus,
+                DepositId = message.DepositId
             };
         }
     }

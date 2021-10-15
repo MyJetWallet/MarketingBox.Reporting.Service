@@ -62,10 +62,11 @@ namespace MarketingBox.Reporting.Service.Postgres
         private void SetDepositReadModel(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Deposit>().ToTable(DepositTableName);
-            modelBuilder.Entity<Deposit>().HasKey(e => e.LeadId);
+            modelBuilder.Entity<Deposit>().HasKey(e => e.DepositId);
             modelBuilder.Entity<Deposit>().HasIndex(e => new { e.TenantId, e.LeadId });
             modelBuilder.Entity<Deposit>().HasIndex(e => new { e.AffiliateId });
-            modelBuilder.Entity<Deposit>().Property(m => m.LeadId)
+            modelBuilder.Entity<Deposit>().HasIndex(e => new { e.LeadId });
+            modelBuilder.Entity<Deposit>().Property(m => m.DepositId)
                 .ValueGeneratedNever();
         }
 
