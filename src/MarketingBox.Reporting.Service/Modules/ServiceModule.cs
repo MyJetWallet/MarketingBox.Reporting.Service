@@ -3,10 +3,7 @@ using MarketingBox.Affiliate.Service.Client;
 using MarketingBox.Affiliate.Service.MyNoSql.Campaigns;
 using MarketingBox.Reporting.Service.Subscribers;
 using MyJetWallet.Sdk.NoSql;
-using MyJetWallet.Sdk.Service;
 using MyJetWallet.Sdk.ServiceBus;
-using MyNoSqlServer.Abstractions;
-using MyNoSqlServer.DataReader;
 using MyServiceBus.Abstractions;
 
 namespace MarketingBox.Reporting.Service.Modules
@@ -21,8 +18,8 @@ namespace MarketingBox.Reporting.Service.Modules
 
             var serviceBusClient = builder
                 .RegisterMyServiceBusTcpClient(
-                    Program.ReloadedSettings(e => e.MarketingBoxServiceBusHostPort),
-                    ApplicationEnvironment.HostName, Program.LogFactory);
+                    Program.ReloadedSettings(e => e.MarketingBoxServiceBusHostPort), 
+                    Program.LogFactory);
 
             builder.RegisterMyNoSqlReader<CampaignNoSql>(noSqlClient, CampaignNoSql.TableName);
 
