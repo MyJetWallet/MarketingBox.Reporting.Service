@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <UserSecretsId>d6925076-e50c-4b8e-9fde-7afb4c7958f0</UserSecretsId>
-    <LangVersion>8.0</LangVersion>
+    <LangVersion>9.0</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,7 +14,7 @@
     <PackageReference Include="JetBrains.Annotations" Version="2021.2.0" />
     <PackageReference Include="MarketingBox.Integration.Service.Client" Version="1.0.7" />
     <PackageReference Include="MarketingBox.Affiliate.Service.Client" Version="1.0.12" />
-    <PackageReference Include="MarketingBox.Registration.Service.Client" Version="1.0.23" />
+    <PackageReference Include="MarketingBox.Registration.Service.Client" Version="1.0.25" />
     <PackageReference Include="MarketingBox.TrafficEngine.Service.Client" Version="1.0.4" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
